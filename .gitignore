@@ -4,6 +4,8 @@
 
 ## User settings
 xcuserdata/
+*.xcworkspace/
+*.xcodeproj/
 
 ## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
 *.xcscmblueprint
@@ -22,6 +24,7 @@ DerivedData/
 *.perspectivev3
 !default.perspectivev3
 
+
 ## Obj-C/Swift specific
 *.hmap
 
@@ -33,6 +36,7 @@ DerivedData/
 ## Playgrounds
 timeline.xctimeline
 playground.xcworkspace
+
 
 # Swift Package Manager
 #
