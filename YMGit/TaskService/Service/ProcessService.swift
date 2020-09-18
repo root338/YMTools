@@ -12,28 +12,13 @@ public class ProcessService: NSObject {
     
     public typealias GMLProcessResult = Result<String, Error>
     
-    func process(path: String, command: String) -> GMLProcessResult {
+    func process(path: String, arguments: [String]) -> GMLProcessResult {
         let task = Process()
         task.launchPath = path
-        let mArguments = [
-            command
-        ]
-        task.arguments = mArguments
+        task.arguments = arguments
         let (output, error) = task.addOutputAndError()
         task.launch()
         return handle(output: output, error: error)
-    }
-}
-
-public extension ProcessService {
-    func shell(_ command: String) -> GMLProcessResult {
-        return process(path: "/bin/bash", command: command)
-    }
-    
-    /// 调用 /usr/bin/git 下的 git
-    /// - Parameter command: 执行的命令，不需要前边追加 git
-    func git(_ command: String) -> GMLProcessResult {
-        return process(path: "/usr/bin/git", command: command)
     }
 }
 

@@ -7,3 +7,12 @@
 //
 
 import Foundation
+
+public extension ProcessService {
+    func shell(_ command: String) -> GMLProcessResult {
+        return process(path: "/bin/bash", arguments: [
+            "-c",
+            command
+        ])
+    }
+}

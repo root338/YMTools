@@ -4,7 +4,6 @@
 # remoteBranch: 远程分支名
 # addTag: 打标签
 # addTagMsg: 打标签的附加信息
-
 inputArguments=$*
 # 对传入参数进行解析
 getValue() {
@@ -48,13 +47,13 @@ then
   echo "git 仓库没有变化"
 else
   echo "git 仓库被修改了"
-  git add *
+  # $(git add "*")
   commitMsg=$(getValue "commitMsg")
   if [ -z ${commitMsg} ]
   then
     commitMsg="-"
   fi
-  git commit -m ${commitMsg}
+  git commit -a -m ${commitMsg}
 fi
 # 标签处理
 addTag=$(getValue "addTag")
@@ -90,9 +89,9 @@ if [[ ${statusDidChange} == 'true' ]]; then
       result=1
     fi
   fi
-  if [[ ${result} != 1 ]]; then
-    git push origin ${currentBranch}:${remoteBranch#*/}
-  fi
+  # if [[ ${result} != 1 ]]; then
+    # git push origin ${currentBranch}:${remoteBranch#*/}
+  # fi
 
 fi
 

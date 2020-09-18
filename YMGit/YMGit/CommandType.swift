@@ -8,6 +8,8 @@
 
 import Cocoa
 
-class CommandType: NSObject {
-
+enum CommandType: String, CaseIterable {
+    case branch_tag
+    case branch
+    case tag
 }
