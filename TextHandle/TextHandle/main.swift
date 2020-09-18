@@ -32,5 +32,6 @@ catch let error as TextError {
 }
 catch {
     print(error.localizedDescription)
+    exit(1)
 }
 
