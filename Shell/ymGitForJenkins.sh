@@ -45,6 +45,7 @@ statusDidChange=true
 if [[ "${status}" =~ "nothing to commit, working tree clean" ]]
 then
   statusDidChange=false
+  echo "git 仓库没有变化"
 else
   echo "git 仓库被修改了"
   git add *
