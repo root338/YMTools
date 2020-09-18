@@ -78,7 +78,7 @@ fi
 # 提交远程
 if [[ ${statusDidChange} == 'true' ]]; then
   git fetch --all
-  currentBranch=$(localBranch)
+  currentBranch=$(getLocalBranch)
   isNewForRemote=$(git log ${remoteBranch}..${currentBranch})
   if [[ -n ${isNewForRemote} ]]; then
     # 服务端也有新的提交，合并下
