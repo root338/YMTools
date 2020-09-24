@@ -4,6 +4,8 @@
 # remoteBranch: 远程分支名
 # addTag: 打标签
 # addTagMsg: 打标签的附加信息
+# author: 提交的作者信息
+
 inputArguments=$*
 # 对传入参数进行解析
 getValue() {
@@ -27,10 +29,16 @@ getLocalBranch() {
   fi
   echo ${localBranch}
 }
-result=0
+getSelectRemoteBranch() {
+  remoteBranch=$(getValue "remoteBranch")
+  if [[ -n ${remoteBranch} ]]; then
+    echo $(git branch --remotes --list ${remoteBranch})
+  fi
+}
 
+result=0
 # 获取传入的远程分支内容
-remoteBranch=$(git branch --remotes --list $(getValue "remoteBranch"))
+remoteBranch=$(getSelectRemoteBranch)
 if [[ -z ${remoteBranch} ]]; then
   echo "必须使用远程分支"
   exit 0
@@ -44,34 +52,40 @@ statusDidChange=true
 if [[ "${status}" =~ "nothing to commit, working tree clean" ]]
 then
   statusDidChange=false
-  echo "git 仓库没有变化"
+  echo "git content not change"
 else
-  echo "git 仓库被修改了"
+  echo "git commit"
   # $(git add "*")
   commitMsg=$(getValue "commitMsg")
   if [ -z ${commitMsg} ]
   then
     commitMsg="-"
   fi
-  git commit -a -m ${commitMsg}
+  author=$(getValue "author")
+  if [[ -n "${author}" ]]; then
+    git commit -a -m "${commitMsg}" --author="${author}"
+  else
+    git commit -a -m "${commitMsg}"
+  fi
+
 fi
 # 标签处理
 addTag=$(getValue "addTag")
 if [[ -n ${addTag} ]]; then
-  isExist=$(git ls-remote --tags --refs ${addTag})
-  if [[ ${isExist} =~ "does not appear to be a git repository" ]]; then
+  isExist=$(git ls-remote --tags --refs origin ${addTag})
+  if [[ ${isExist} =~ "refs/tags/${addTag}" ]]; then
     # tag 已存在
+    echo "git tag(${addTag}) did existed"
     if [[ ${statusDidChange} == 'true' ]]; then
-      echo '标签已存在'
       result=1
     fi
   else
+    echo "add git tag(${addTag})"
     addTagMsg=$(getValue "addTagMsg")
     if [[ -z ${addTagMsg} ]]; then
-      git tag -a ${addTag}
-    else
-      git tag -a ${addTag} -m ${addTagMsg}
+      addTagMsg="-"
     fi
+    git tag -a ${addTag} -m "${addTagMsg}"
     git push origin --tags
   fi
 fi
@@ -89,9 +103,9 @@ if [[ ${statusDidChange} == 'true' ]]; then
       result=1
     fi
   fi
-  # if [[ ${result} != 1 ]]; then
-    # git push origin ${currentBranch}:${remoteBranch#*/}
-  # fi
+  if [[ ${result} != 1 ]]; then
+    git push origin ${currentBranch}:${remoteBranch#*/}
+  fi
 
 fi
 
