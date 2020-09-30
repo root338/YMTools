@@ -19,7 +19,7 @@ class FileTool
   end
 
   def initialize(*params)
-    if !params || params.class.name != "Hash"
+    if !params || params.class != Hash
       params = {}
     end
     @ignoreFiles = params.has_key?(:ignoreFiles) ? params[:ignoreFiles] : [
@@ -31,7 +31,7 @@ class FileTool
 
   ## 文件搜索
   def find (params)
-    if params.class.name == "Hash"
+    if params.class == Hash
       beginFind(params)
       path = params[:path]
       result = nil
@@ -40,7 +40,7 @@ class FileTool
       end
       endFind()
       return result
-    elsif params.class.name == "String"
+    elsif params.class == String
       if !shouldFind(params)
         return nil
       end
@@ -50,7 +50,9 @@ class FileTool
       return nil
     end
   end
-
+# -------------
+# 私有方法
+# -------------
   def beginFind (params)
     @cacheAtt = {
       ignoreFiles: @ignoreFiles,
@@ -137,7 +139,7 @@ class FileTool
   # value 需要判断的值
   # condition 条件，可以是字符串或正则表达式
   def isInclude(value, condition)
-    if condition.class.name == "Regexp"
+    if condition.class == Regexp
       return value =~ condition
     else
       return value == condition
@@ -153,3 +155,10 @@ end
 #   searchRule: /^*.xcodeproj$/,
 #   isDepth: true
 # )
+
+# file = "/path/to/xyz.mp4"
+#
+# comp = File.basename file        # => "xyz.mp4"
+# extn = File.extname  file        # => ".mp4"
+# name = File.basename file, extn  # => "xyz"
+# path = File.dirname  file        # => "/path/to"

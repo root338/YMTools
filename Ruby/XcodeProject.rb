@@ -15,22 +15,27 @@ class XcodeProject
 attr_accessor :configuration
 # 改值时改变所有 configuration 下的值
 attr_accessor :isChangeAllConfiguration
+attr_accessor :isDepthSearch
 def self.openProject(projectPath)
-
   return XcodeProject.new(projectPath)
 end
 def initialize(projectPath)
   @isChangeAllConfiguration = false
   @configuration = Configuration::Release
   @projectPath = projectPath
+  @isDepthSearch = true
 end
 
 ## 文件搜索
 def getFileTool
   if @fileTool
+    if @fileTool.isDepth != @isDepthSearch
+      @fileTool.isDepth = @isDepthSearch
+    end
     return @fileTool
   end
   @fileTool = FileTool.new()
+  @fileTool.isDepth = @isDepthSearch
   return @fileTool
 end
 # 获取项目路径
@@ -57,8 +62,10 @@ def getXcodeprojWorkspace
   if @xcodeprojWorkspace
     return @xcodeprojWorkspace
   end
-
-  @xcodeprojWorkspace = File.basename getXcodeprojFilePath(), ".xcodeproj"
+  @xcodeprojWorkspace = File.basename getFileTool().find(
+    path: @projectPath,
+    searchRule: /^*\.xcworkspace$/,
+  )
   return @xcodeprojWorkspace
 end
 
@@ -99,24 +106,163 @@ def getTarget (targetName = nil)
   return nil
 end
 # 获取 target 下配置参数
-def getBuildConfiguration (configuration = nil)
-  if !configuration
-    configuration = @configuration
-  end
+def getBuildConfiguration ()
   getTarget.build_configuration_list.build_configurations.each do |buildConfig|
-    if buildConfig.name == configuration
+    if buildConfig.name == @configuration
       return buildConfig
     end
   end
   return nil
 end
 
-def getBuildSetting
-  return getBuildConfiguration.build_settings
+def getBuildSetting()
+  return getBuildConfiguration().build_settings
+end
+
+def setBuildSetting(key, value)
+  if @isChangeAllConfiguration
+    getTarget().build_configuration_list.set_setting(key, value)
+  else
+    getBuildSetting()[key] = value
+  end
+end
+
+# 获取 info.plist 绝对路径
+def getInfoAbsolutePath
+  infoPath = getBuildSetting()[BuildConfigKey::INFOPLIST_FILE]
+  if infoPath.start_with?('/')
+    # 绝对路径
+    return infoPath
+  else
+    xcodeprojDir = File.dirname getXcodeprojFilePath()
+    return "#{xcodeprojDir}/#{infoPath}"
+  end
+end
+
+def readInfo
+  infoPath = getInfoAbsolutePath()
+  return Xcodeproj::Plist.read_from_path(infoPath)
+end
+
+def writeInfo(hash)
+  Xcodeproj::Plist.write_to_path(hash, getInfoAbsolutePath())
+end
+# 对 info.plist 文件单个 key 进行写入
+def writeInfoKey(key, hash)
+  info = readInfo()
+  info[key] = hash
+  writeInfo(info)
+end
+# 自动对 info.plist 文件单个 key 进行写入,如果是宏则改变宏对应的值
+# hash 为 nil, 读取指定 key 的值，hash不为空写入指定hash值
+def infoKey(key, hash = nil)
+  info = readInfo()
+  oldValue = info[key]
+  macroValue = macroVariable(oldValue)
+  if hash
+    if macroValue
+      setBuildSetting(macroValue, hash)
+      project().save()
+    elsif oldValue != hash
+      info[key] = hash
+      writeInfo(info)
+    end
+    return hash
+  else
+    if macroValue
+      return getBuildSetting()[macroValue]
+    else
+      return info[key]
+    end
+  end
+end
+# 修改target 下值，并且同步修改 dependencies 下相同的值
+def infoKey_syncDependencies(key, value = nil)
+  oldValue = infoKey(key)
+  dependencies = getTarget().dependencies
+  if value && dependencies.count > 0
+    oldTargetName = @targetName
+    dependencies.each do |dependencie|
+      @targetName = dependencie.target.name
+      infoKey_syncDependencies(key, value)
+    end
+    @targetName = oldTargetName
+  end
+  return infoKey(key, value)
+end
+
+# 修改当前 target 的唯一标识，且修改 dependencies 下的所有唯一标识
+def bundleIdentifier(value = nil)
+  if value && value.class != String
+    puts "必须是 String 类型值"
+    return nil
+  end
+  key = InfoKey::CFBundleIdentifier
+  oldvalue = infoKey(key)
+  dependencies = getTarget().dependencies
+  if value && dependencies.count > 0
+    oldTargetName = @targetName
+    dependencies.each do |dependencie|
+      @targetName = dependencie.target.name
+      dependencieValue = infoKey(key)
+      dependencieValue = dependencieValue.gsub(oldvalue, value)
+      bundleIdentifier(dependencieValue)
+    end
+    @targetName = oldTargetName
+  end
+  return infoKey(key, value)
+end
+
+def bundleShortVersion(value = nil)
+  if value && value.class != String
+    puts "必须是 String 类型值"
+    return nil
+  end
+  key = InfoKey::CFBundleShortVersionString
+  return infoKey_syncDependencies(key, value)
+end
+def bundleVersion(value = nil)
+  if value.class == Integer
+    value = value.to_s
+  end
+  if value && value.class != String
+    puts "必须是 String/Integer 类型值"
+    return nil
+  end
+  key = InfoKey::CFBundleVersion
+  return infoKey_syncDependencies(key, value)
+end
+def bundleDisplayName(value = nil)
+  key = InfoKey::CFBundleDisplayName
+  if value && value.class != String
+    puts "必须是 String 类型值"
+    return nil
+  end
+  if value
+    writeInfoKey(key, value)
+    return value
+  else
+    return readInfo()[key]
+  end
+end
+
+# 辅助方法
+# 判断传入参数是否是 $(...) 值
+def macroVariable(value)
+  if value.class != String
+    return nil
+  end
+  regexp = /^\$\([\s\S]*\)$/
+  if value =~ regexp
+    return value[2...(value.size - 1)]
+  else
+    return nil
+  end
 end
 
 end
 
 project = XcodeProject.openProject("/Users/apple/dev/TestProject/mytest/MyTest")
-puts project.getXcodeprojWorkspace
-puts project.getBuildSetting()[BuildConfigKey::INFOPLIST_FILE]
+# project.isChangeAllConfiguration = true
+# project.bundleIdentifier("com.RubyTest.010")
+puts project.bundleDisplayName("嘿嘿")
