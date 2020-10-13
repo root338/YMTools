@@ -4,10 +4,11 @@ require 'xcodeproj'
 
 # 加载自定义ruby文件
 # require_relative "ToolsMethod.rb"
+require_relative 'XcodeProjectDefines.rb'
+require_relative 'FileTool.rb'
 # 或者
-$LOAD_PATH << '.'
-require 'XcodeProjectDefines.rb'
-require 'FileTool.rb'
+# $LOAD_PATH << '.'
+# require 'xxx.rb'
 
 class XcodeProject
 
@@ -214,9 +215,10 @@ def bundleIdentifier(value = nil)
 end
 
 def bundleShortVersion(value = nil)
-  if value && value.class != String
-    puts "必须是 String 类型值"
-    return nil
+  if value
+    if value.class != String || !(value =~ /^[0-9]+\.[0-9]+\.[0-9]+$/)
+      raise "版本号必须是 0.0.0 形式的字符串#{value}"
+    end
   end
   key = InfoKey::CFBundleShortVersionString
   return infoKey_syncDependencies(key, value)
@@ -225,9 +227,10 @@ def bundleVersion(value = nil)
   if value.class == Integer
     value = value.to_s
   end
-  if value && value.class != String
-    puts "必须是 String/Integer 类型值"
-    return nil
+  if value
+    if value.class != String || !(value =~ /^[0-9]+$/)
+      raise "编译号必须是 String/Integer 类型纯数字"
+    end
   end
   key = InfoKey::CFBundleVersion
   return infoKey_syncDependencies(key, value)
@@ -262,7 +265,6 @@ end
 
 end
 
-project = XcodeProject.openProject("/Users/apple/dev/TestProject/mytest/MyTest")
+# project = XcodeProject.openProject("/Users/apple/dev/TestProject/mytest/MyTest")
 # project.isChangeAllConfiguration = true
 # project.bundleIdentifier("com.RubyTest.010")
-puts project.bundleDisplayName("嘿嘿")
