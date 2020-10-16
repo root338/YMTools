@@ -1,4 +1,5 @@
 
+# 传入的参数形式 key1=value1 key2=value2
 # 支持的参数的key如下:
 # commitMsg: 提交分支时的信息
 # remoteBranch: 远程分支名

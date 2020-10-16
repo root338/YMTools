@@ -9,6 +9,7 @@ class BuildConfig
   def self.buildConfig(params)
     return BuildConfig.new.buildConfig(params)
   end
+  # 传入项目路径，获取与工作空间同名的 scheme
   def self.buildConfig(path, params = nil)
     if params == nil
       params = {}
@@ -21,7 +22,8 @@ class BuildConfig
     params[:workspace] = project.getXcodeprojWorkspace
     return BuildConfig.new.buildConfig(params)
   end
-
+  # 默认编译配置，fastlane action gym 的参数值
+  # 必须传入 :scheme 值
   def getDefaultBuildConfig(params)
 
     if !params.has_key?(:scheme)
@@ -139,7 +141,7 @@ class UploadApp
     ]
     requiredKeys.each { |key|
       if !params.has_key?(key)
-        raise "必须包含#{requiredKeys} key 值，源数据: #{params}"
+        raise "必须包含#{requiredKeys}，源数据: #{params}"
       end
     }
   end

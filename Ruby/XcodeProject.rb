@@ -177,7 +177,7 @@ def infoKey(key, hash = nil)
     end
   end
 end
-# 修改target 下值，并且同步修改 dependencies 下相同的值
+# 修改target 下值，并且同步修改 dependencies(包含的扩展) 下相同的值
 def infoKey_syncDependencies(key, value = nil)
   oldValue = infoKey(key)
   dependencies = getTarget().dependencies
