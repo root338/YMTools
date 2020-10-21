@@ -14,6 +14,6 @@ import dingRobot
 params = commandARGVAnalyze.tiskMark(sys.argv[1:])
 robot = dingRobot.robot(params)
 sign = sendDing.sign(robot)
-print(dingMessage.msgBody(params)) 
-# result = sendDing.request(sign = sign, jsonBody = dingMessage.msgBody(params))
+msgBody = dingMessage.msgBody(params)
+result = sendDing.request(sign = sign, jsonBody = msgBody)
 # print(result)

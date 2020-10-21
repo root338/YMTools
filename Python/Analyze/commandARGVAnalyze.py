@@ -1,14 +1,14 @@
 
 import sys
 
-def tiskMark(params):
-    return tiskMarkFull(params)[0]
+def tiskMark(params, mark = ":"):
+    return tiskMarkFull(params, mark)[0]
 
-def tiskMarkFull(params):
+def tiskMarkFull(params, mark = ":"):
     dic = {}
     other = []
     for obj in params:
-        index = obj.find(":")
+        index = obj.find(mark)
         if index == -1 or index == 0 or index == len(obj):
             other.append(obj)
             continue

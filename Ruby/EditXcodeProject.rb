@@ -8,7 +8,7 @@ class EditXcodeProject
     params = CommandARGVAnalyze.new.tiskMark(params)
     projectPath = params["projectPath"]
     if projectPath == nil || !File.exist?(projectPath)
-      raise "请提供有效项目路径(projectPath)"
+      raise "请提供有效项目路径(projectPath), 当前输入值：#{projectPath}"
     end
     editObj = EditXcodeProject.new(projectPath)
     editObj.editProject(params)
@@ -43,7 +43,6 @@ class EditXcodeProject
     puts logs.join(",")
   end
 end
-
 EditXcodeProject.edit(ARGV)
 
 # if params.has_key? "CFBundleShortVersionString"

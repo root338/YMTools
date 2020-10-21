@@ -17,14 +17,45 @@ attr_accessor :configuration
 # 改值时改变所有 configuration 下的值
 attr_accessor :isChangeAllConfiguration
 attr_accessor :isDepthSearch
-def self.openProject(projectPath)
-  return XcodeProject.new(projectPath)
+def self.openProject(argv)
+  if argv.class == String
+    return XcodeProject.new(argv)
+  elsif argv.class == Hash
+    project = XcodeProject.new(argv[:projectPath])
+    project.config(project)
+    return project
+  end
+  return nil
 end
 def initialize(projectPath)
+  if !projectPath || projectPath.class != String || !File.exist?(projectPath)
+    raise "项目路径必须存在"
+  end
   @isChangeAllConfiguration = false
   @configuration = Configuration::Release
   @projectPath = projectPath
   @isDepthSearch = true
+end
+
+def config(params)
+  if !params || params.class != Hash
+    raise "必须是 Hash 类型"
+  end
+  if params.empty?
+    return
+  end
+  if params.has_key?(:configuration)
+    project.configuration = params[:configuration]
+  end
+  if params.has_key?(:isChangeAllConfiguration)
+    project.isChangeAllConfiguration = params[:isChangeAllConfiguration]
+  end
+  if params.has_key?(:isDepthSearch)
+    project.isDepthSearch = params[:isDepthSearch]
+  end
+  if params.has_key?(:targetName)
+    project.setTargetName(params[:targetName])
+  end
 end
 
 ## 文件搜索
@@ -72,9 +103,12 @@ end
 
 ## target 处理
 def getTargetName
-  return @targetName ? @targetName : getDefaultTargetName
+  return @targetName ? @targetName : getDefaultTargetName()
 end
 def setTargetName (targetName)
+  if !targetName || targetName.class != String
+    raise "target 不能为空，且必须为字符串"
+  end
   @targetName = targetName
 end
 # 获取默认 target name

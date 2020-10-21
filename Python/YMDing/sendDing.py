@@ -4,6 +4,7 @@ import hmac
 import hashlib
 import base64
 import urllib.parse
+# 需要额外安装，可以通过 pip 命令安装 pip install xxx
 import requests
 
 def sign(params):
