@@ -15,9 +15,17 @@ if params["configuration"]
 end
 project = XcodeProject.openProject(projectPath)
 other.each { |value|
+  targetValue = nil
   if value == "bundleVersion"
-    puts project.bundleVersion
+    targetValue = project.bundleVersion
   elsif value == "bundleShortVersion"
-    puts project.bundleShortVersion
+    targetValue = project.bundleShortVersion
+  elsif value == "displayName"
+    targetValue = project.bundleDisplayName
+  elsif value == "bundleIdentifier"
+    targetValue = project.bundleIdentifier
+  end
+  if targetValue
+    puts "#{targetValue}"
   end
 }

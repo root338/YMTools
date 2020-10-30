@@ -145,17 +145,28 @@ class UploadApp
       end
     }
   end
+
+  def runUploadingPgyer(params)
+    verifyPayer(params)
+    return system "curl" " -F 'file=@#{params[:ipa]}' -F 'uKey=#{params[:user_key]}' -F '_api_key=#{params[:api_key]}' -F 'installType=#{params[:install_type]}' -F 'password=#{params[:password]}' https://upload.pgyer.com/apiv1/app/upload"
+  end
+
   def toPgyer(params)
     if params.has_key?(:ipa) && params.length == 1
       params = params.merge(UploadConfig.pgyerParams)
     end
-    verifyPayer(params)
-    result = system "curl" " -F 'file=@#{params[:ipa]}' -F 'uKey=#{params[:user_key]}' -F '_api_key=#{params[:api_key]}' -F 'installType=#{params[:install_type]}' -F 'password=#{params[:password]}' https://upload.pgyer.com/apiv1/app/upload"
+    result = runUploadingPgyer(params)
+    if !result
+      # 重试一次
+      result = runUploadingPgyer(params)
+    end
     return result
   end
 end
 
 # puts UploadConfig.altoolParams("MyTest")
-# file = "/Users/apple/Documents/Ipa/MyTest/app-store/MyTest-app-store-Release 2020-10-10 16-38-29.ipa"
-# result = system "xcrun altool" " --upload-app -f '#{file}' -t ios -u username"
+# file = "/Users/apple/Documents/Ipa/QuickAskCommunity/ad-hoc/QuickAskCommunity-ad-hoc-ad-hoc 2020-10-29 16-33-00.ipa"
+# result = UploadApp.toPgyer(
+#   ipa: file
+# )
 # puts result

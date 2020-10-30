@@ -27,8 +27,9 @@ def firstSearch(path, pattern, isDepth = True):
         return sub
 
 def searchText(path, pattern):
-    if not path or not Path(path).exists():
-        raise Exception(f"路径不存在{path}")
+    pathObj = Path(path)
+    if not path or not pathObj.exists() or pathObj.is_dir():
+        raise Exception(f"路径不存在或是目录{path}")
     if not pattern:
         return None
     obj = open(path, mode="r")

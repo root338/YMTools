@@ -272,7 +272,7 @@ end
 def bundleDisplayName(value = nil)
   key = InfoKey::CFBundleDisplayName
   if value && value.class != String
-    puts "必须是 String 类型值"
+    raise "必须是 String 类型值"
     return nil
   end
   if value

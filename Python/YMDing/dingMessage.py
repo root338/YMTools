@@ -14,6 +14,8 @@ def msgBody(params):
         return link(params)
     elif type == "markdown":
         return appendAt(markdown(params))
+    elif type == "actionCard":
+        return actionCard(params)
     else:
         return nil
 
@@ -62,12 +64,22 @@ def link(params):
         "msgtype": "link",
         "link" : msg(allKeys, mustKeys, params)
     }
+
 def markdown(params):
     mustKeys = ["title","text"]
     allKeys = mustKeys.copy()
     return {
         "msgtype": "markdown",
         "markdown" : msg(allKeys, mustKeys, params)
+    }
+
+def actionCard(params):
+    mustKeys = ["title", "text", "singleTitle", "singleURL"]
+    allKeys = mustKeys.copy()
+    # allKeys.append("btnOrientation")
+    return {
+        "msgtype": "actionCard",
+        "actionCard" : msg(allKeys, mustKeys, params)
     }
 
 def at(params):

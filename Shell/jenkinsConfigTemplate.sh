@@ -1,8 +1,5 @@
 
 tmpPath="$(pwd)/tmp"
-# cd 到项目主目录
-projectName="MyTest"
-
 logMsg=""
 # 提交git
 commitGit() {
@@ -28,11 +25,61 @@ appendMsg() {
     fi
   done
 }
+# 数据纠错，在一些配置中某些参数不能更改
+dataCorrection() {
+  if [[ ${isBuild} == false ]]; then
+    return 0
+  fi
+  if [[ ${method} != "app-store" ]]; then
+    return 0
+  fi
+  configuration="Release"
+}
 
-if [[ -n ${projectName} ]]; then
-  cd ./${projectName}
-fi
+# 保存构建状态
+saveStatus() {
+  _appInfo=$(ruby ~/dev/YMTools/Ruby/PrintAppInfo.rb "projectPath:${WORKSPACE}" bundleShortVersion bundleVersion displayName bundleIdentifier)
+  _displayName=$(echo "${_appInfo}" | sed -n '3p')
+  _bundleShortVersion=$(echo "${_appInfo}" | sed -n '1p')
+  _bundleVersion=$(echo "${_appInfo}" | sed -n '2p')
+  _bundleIdentifier=$(echo "${_appInfo}" | sed -n '4p')
+  _printFile=~/dev/YMTools/Python/printFile.py
+  _APIVersion=$(find "${WORKSPACE}" -name "APIConstant.h" -type f | xargs cat | grep -oE "V[0-9]+" | head -n 1)
+  value="""
+  {
+    \"JOB_NAME\" : \"${JOB_NAME}\",
+    \"BUILD_NUMBER\" : \"${BUILD_NUMBER}\",
+    \"WORKSPACE\" : \"${WORKSPACE}\",
+    \"BUILD_URL\" : \"${BUILD_URL}\",
+    \"JOB_URL\" : \"${JOB_URL}\",
+    \"LOG_URL\" : \"${BUILD_URL}consoleFull\",
 
+    \"RESULT\" : $1,
+    \"isBuild\" : $isBuild,
+    \"export_method\" : \"${method}\",
+    \"configuration\" : \"${configuration}\",
+
+    \"APIVersion\" : \"${_APIVersion}\",
+    \"bundleIdentifier\" : \"${_bundleIdentifier}\",
+    \"bundleVersion\" : \"${_bundleVersion}\",
+    \"bundleShortVersion\" : \"${_bundleShortVersion}\",
+    \"displayName\" : \"${_displayName}\"
+  }
+  """
+  exportFolder="$HOME/.jenkinsBuildStatus/${JOB_NAME}"
+  if [[ ! -d "${exportFolder}" ]]; then
+    mkdir -p "${exportFolder}"
+  fi
+  exportPath="${exportFolder}/statusInfo.json"
+  if [[ ! -f "${exportPath}" ]]; then
+    touch "${exportPath}"
+  fi
+  echo $value > "${exportPath}"
+}
+
+dataCorrection
+
+saveStatus 0
 # 修改接口号,AppIcon,LaunchImage资源
 imagePath="imagePath:${tmpPath}/ImagePath.zip"
 version="APIVersion:${APIVersion}"
@@ -59,8 +106,14 @@ fi
 if [[ ${isBuild} == false ]]; then
   echo "不打包仅执行修改资源"
   commitGit
+  saveStatus 1
   exit 0
 fi
-
+fastlaneFolder=$(find ./ -name "fastlane" -type d)
+if [[ -n "${fastlaneFolder}" ]]; then
+  cd "${fastlaneFolder}"
+  cd ..
+fi
 fastlane haha export_method:${method} configuration:${configuration} clean:${clean} --verbose
 commitGit
+saveStatus 1

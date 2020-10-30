@@ -34,7 +34,11 @@ if len(versionValue) > 0:
         log.append(f"接口号{oldValue}=>{new}")
 
 if "imagePath" in params and fileTool.exists(params["imagePath"]):
-    imagePath = zip.unzip(params["imagePath"], True)
+    imagePath = params["imagePath"]
+    if not zip.verify(imagePath):
+        zip.removeAll(imagePath)
+        raise Exception(f"{imagePath} 不是一个有效的zip压缩文件")
+    imagePath = zip.unzip(imagePath, True)
     isMust = "true"
     # 处理 AppIcon
     isMustAppIcon = params.get("isMustAppIcon", isMust) == isMust
