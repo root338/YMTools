@@ -87,7 +87,11 @@ if [[ -n ${addTag} ]]; then
       addTagMsg="-"
     fi
     git tag -a ${addTag} -m "${addTagMsg}"
-    git push origin --tags
+    # push所有tag到远程
+    # git push origin --tags
+    # 删除远程分支
+    # git push origin ":refs/tags/${addTag}"
+    git push origin --tags "${addTag}"
   fi
 fi
 # 提交远程

@@ -3,7 +3,8 @@ require 'json'
 $LOAD_PATH << '~/dev/YMConfig'
 require 'YMConfig.rb'
 require_relative 'XcodeProject.rb'
-
+require_relative 'hashExtension.rb'
+# 编译配置
 class BuildConfig
 
   def self.buildConfig(params)
@@ -25,19 +26,18 @@ class BuildConfig
   # 默认编译配置，fastlane action gym 的参数值
   # 必须传入 :scheme 值
   def getDefaultBuildConfig(params)
-
     if !params.has_key?(:scheme)
       puts "需要项目 scheme "
       return nil
     end
     scheme = params[:scheme]
-    export_method = params.has_key?(:export_method) ? params[:export_method] : "ad-hoc"
-    configuration = params.has_key?(:configuration) ? params[:export_method] : "Release"
+    export_method =  params.fetch(:export_method, "ad-hoc")
+    configuration = params.fetch(:configuration, "Release")
     outputFolder = "~/Documents/Ipa/#{scheme}"
     time = Time.new
     mFormatDate = time.strftime("%Y-%m-%d %H-%M-%S")
     outputFolder = "#{outputFolder}/#{export_method}"
-    output_name = "#{scheme}-#{export_method}-#{configuration} #{mFormatDate}"
+    output_name = "#{scheme}-#{export_method}-#{configuration} #{mFormatDate}.ipa"
     return {
       output_directory: outputFolder,
       output_name: output_name,
@@ -67,6 +67,18 @@ class BuildConfig
 
 end
 
+class Build
+  def self.exportIpa(params)
+    commandName = "xcodebuild"
+    argv = "-exportArchive"
+    params.each { |key, value|
+      argv += " -#{key} '#{value}'"
+    }
+    puts argv
+  end
+end
+
+# 上传配置
 class UploadConfig
   def self.pgyerParams
     return YMConfig.pgyer
@@ -88,7 +100,7 @@ class UploadConfig
     }
   end
 end
-
+# 上传
 class UploadApp
   # 使用默认配置进行上传
   def self.default(params)
@@ -139,11 +151,11 @@ class UploadApp
       :install_type,
       :password,
     ]
-    requiredKeys.each { |key|
-      if !params.has_key?(key)
-        raise "必须包含#{requiredKeys}，源数据: #{params}"
-      end
-    }
+    result = HashE.hasKeys(requiredKeys, params)
+    puts result
+    if !result
+      raise "必须包含#{requiredKeys}，源数据: #{params}"
+    end
   end
 
   def runUploadingPgyer(params)
@@ -165,8 +177,12 @@ class UploadApp
 end
 
 # puts UploadConfig.altoolParams("MyTest")
-# file = "/Users/apple/Documents/Ipa/QuickAskCommunity/ad-hoc/QuickAskCommunity-ad-hoc-ad-hoc 2020-10-29 16-33-00.ipa"
+# file = ""
 # result = UploadApp.toPgyer(
 #   ipa: file
 # )
 # puts result
+# Build.exportIpa(
+#   archivePath: "",
+#   exportPath: ""
+# )

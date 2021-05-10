@@ -19,13 +19,12 @@ class EditXcodeProject
   def editProject(params)
     logs = []
     @project.isChangeAllConfiguration = params["changeAll"] == "true" ? true : false
-
     shortVersion = params["bundleShortVersion"]
     if shortVersion && shortVersion.length > 0
       oldShortVersion = @project.bundleShortVersion()
       @project.bundleShortVersion(shortVersion)
       if oldShortVersion != shortVersion
-        logs << "修改版本号#{oldShortVersion}=>#{shortVersion}"
+        logs << "版本号#{oldShortVersion}=>#{shortVersion}"
       end
     end
 
@@ -38,8 +37,20 @@ class EditXcodeProject
     end
     newVersion = @project.bundleVersion()
     if oldVersion != newVersion
-      logs << "修改编译号#{oldVersion}=>#{newVersion}"
+      logs << "编译号#{oldVersion}=>#{newVersion}"
     end
+
+    displayName = params["displayName"]
+    if displayName && displayName.length > 0
+      oldDisplayName = @project.bundleDisplayName()
+      if oldDisplayName != displayName
+        displayName = @project.bundleDisplayName(displayName)
+      end
+      if oldDisplayName != displayName
+        logs << "app显示名称#{oldDisplayName}=>#{displayName}"
+      end
+    end
+
     puts logs.join(",")
   end
 end

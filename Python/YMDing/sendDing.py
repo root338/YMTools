@@ -34,5 +34,5 @@ def request(sign, jsonBody):
     link = f'https://oapi.dingtalk.com/robot/send?{query(sign)}'
     headers = { 'Content-Type' : 'application/json' }
     result = requests.post(link, headers=headers, json=jsonBody)
-    print(jsonBody)
+    # print(jsonBody)
     return result.text

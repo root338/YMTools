@@ -2,7 +2,8 @@
 projectName="MyTest"
 minHour=9
 maxHour=23
-currentHour=$(date "+%H")
+# 在取值为 01-09 时，进行数字判断时会被认为八进制，导致判断出错，需要处理结果前缀的 0
+currentHour=$(expr $(date "+%H") + 0)
 if [[ ${currentHour} -lt ${minHour} ]] || [[ ${currentHour} -gt ${maxHour} ]]; then
   echo "不在规定时间内，不发送消息"
   exit 0
@@ -13,7 +14,7 @@ if [[ ! -f "${statusInfo}" ]]; then
 fi
 statusPath="statusPath:${statusInfo}"
 toolPath=~/dev/YMTools/Python/YMDing/ding.py
-python3 "${toolPath}" "${groupName}" "${statusPath}"
+python3 "${toolPath}" "${statusPath}"
 rm "${statusInfo}"
 
 valueAt() {

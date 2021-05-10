@@ -50,6 +50,20 @@ class FileTool
       return nil
     end
   end
+  ## 删除目录，使用系统库 FileUtils.rm_rf 替代，需要导入 fileutils
+  def delete(path)
+    if File.file?(path)
+      File.delete(path)
+    else
+      Dir.foreach(path) { |name|
+        if name == "." || name == ".."
+          next
+        end
+        delete(File.join(path, name))
+      }
+      Dir.delete(path)
+    end
+  end
 # -------------
 # 私有方法
 # -------------

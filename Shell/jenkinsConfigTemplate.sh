@@ -30,7 +30,7 @@ dataCorrection() {
   if [[ ${isBuild} == false ]]; then
     return 0
   fi
-  if [[ ${method} != "app-store" ]]; then
+  if [[ ${method} != "app-store" ]] && [[ ! ${isAllPlatform} ]]; then
     return 0
   fi
   configuration="Release"
@@ -58,6 +58,8 @@ saveStatus() {
     \"isBuild\" : $isBuild,
     \"export_method\" : \"${method}\",
     \"configuration\" : \"${configuration}\",
+    \"P.S.\" : \"${postscript}\",
+    \"isAllPlatform\" : \"${isAllPlatform}\",
 
     \"APIVersion\" : \"${_APIVersion}\",
     \"bundleIdentifier\" : \"${_bundleIdentifier}\",
@@ -95,8 +97,9 @@ toolPath=~/dev/YMTools/Ruby/EditXcodeProject.rb
 bundleVersion="bundleVersion:${bundleVersion}"
 bundleShortVersion="bundleShortVersion:${bundleShortVersion}"
 isAddOne="isAddOne:${bundleVersionAutoAddOne}"
+displayName="displayName:${displayName}"
 changeAll="changeAll:true"
-log=$(ruby $toolPath "${projectPath}" "${bundleVersion}" "${bundleShortVersion}" "${isAddOne}" "${changeAll}")
+log=$(ruby $toolPath "${projectPath}" "${bundleVersion}" "${bundleShortVersion}" "${isAddOne}" "${displayName}" "${changeAll}")
 appendMsg "$log"
 
 if [[ -d "${tmpPath}" ]]; then

@@ -275,12 +275,14 @@ def bundleDisplayName(value = nil)
     raise "必须是 String 类型值"
     return nil
   end
-  if value
-    writeInfoKey(key, value)
-    return value
-  else
-    return readInfo()[key]
+  if value == nil
+    displayName = infoKey(key)
+    if displayName
+      return displayName
+    end
+    return getTarget().name
   end
+  return infoKey(key, value)
 end
 
 # 辅助方法
@@ -301,4 +303,4 @@ end
 
 # project = XcodeProject.openProject("/Users/apple/dev/TestProject/mytest/MyTest")
 # project.isChangeAllConfiguration = true
-# project.bundleIdentifier("com.RubyTest.010")
+# puts project.bundleDisplayName()
