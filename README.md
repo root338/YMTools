@@ -1,10 +1,10 @@
-使用说明
-文件结构
+## 使用说明
+###文件结构
 	{userName}/dev/
 					{本仓库根目录}
 					{密钥/账号信息配置目录}
 		
-环境配置
+### 环境配置
 	先配置好 jenkins, fastlane, ruby, python 环境
 	
 	Jenkins 需要安装的插件
@@ -14,7 +14,7 @@
 		
 	
 	
-Jenkins 项目配置说明	
+### Jenkins 项目配置说明	
 	This project is parameterized 中可以添加的参数为（其它设置需要自行修改代码添加）
 		Git Parameter (设置 git 拉取的信息)
 		method (Choice Parameter 选项 导出包的类型)
@@ -40,6 +40,7 @@ Jenkins 项目配置说明
 	构建后操作
 		添加 Build other projects 选择项目构建完成后运行其它项目，在该项目中的Shell 中 粘贴 Shell/finishWorkTemplate.sh 设置 projectName （jenkins 中设置的项目名称）
 
+### 其它工作
 创建好 Jenkins 项目后，找到项目在 Jenkins 的路径（默认情况下 ~/.jenkins/workspace/{项目名}） 进入到 default 目录下，对该项目配置好 fastlane，设置 Fastfile 为粘贴 Ruby/FastlaneTemplate.rb 内容 （需要添加好 git 仓库到忽略文件，否则会同步 fastlane 的配置文件）
 
 密钥/账号信息配置参照 YMConfig 文件夹下的配置模板说明

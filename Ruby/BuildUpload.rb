@@ -160,6 +160,7 @@ class UploadApp
 
   def runUploadingPgyer(params)
     verifyPayer(params)
+    puts params
     return system "curl" " -F 'file=@#{params[:ipa]}' -F 'uKey=#{params[:user_key]}' -F '_api_key=#{params[:api_key]}' -F 'installType=#{params[:install_type]}' -F 'password=#{params[:password]}' https://upload.pgyer.com/apiv1/app/upload"
   end
 
