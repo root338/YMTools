@@ -30,3 +30,11 @@ valueAt() {
 	  echo $2
   	fi
 }
+# 转换数组，根据 $2 分割 $1 内容
+# transformArr() {
+# 	_oldIFS_analyze="$IFS"
+# 	IFS="$2"
+# 	_arr_analyze=($1)
+# 	IFS="$_oldIFS_analyze"
+# 	echo $_arr_analyze
+# }

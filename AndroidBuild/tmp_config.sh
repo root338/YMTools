@@ -103,14 +103,16 @@ configGradle() {
 
 git="${toolsdir}/git"
 configGit() {
-	if [[ ! -d "$git" ]]; then
+	gitdir="${git}/git-$1"
+	if [[ ! -d "${gitdir}" ]]; then
 		gitPackage="git-$1.tar.gz"
 		localPackagePath="${packageTmp}/${gitPackage}"
-		if [[ ! -f "${localPackageDir}" ]]; then
+		if [[ ! -f "${localPackagePath}" ]]; then
 			wget "https://mirrors.edge.kernel.org/pub/software/scm/git/${gitPackage}" -O "${localPackagePath}"
 		fi
-		tar -xzvf "${localPackagePath}"
+		tar -xzvf "${localPackagePath}" -C "${gitdir}"
 	fi
+	add_export "${gitdir}"
 }
 
 # https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.32.0.tar.gz
