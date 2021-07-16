@@ -23,15 +23,23 @@ inputArguments=$*
 # 对传入参数进行解析
 getValue() {
 	value=""
+	isExistedKey="false"
 	for obj in $inputArguments
 	do
 		key=${obj%%=*}
-		if [ -n $key ] && [ $key == $1 ]
-		then
-			value=${obj#*=}
+		if [[ -n $key && $key == $1 ]]; then
+			if [[ ! $obj =~ ^[^=]+$ ]]; then 
+				isExistedKey="true"
+				# 判断传入的字符串包含 '=' 时，截取 value 值
+				value=${obj#*=}
+			fi
 	  		break
 		fi
 	done
+	if [[ $isExistedKey == false ]]; then
+		# 不存在key值时直接返回
+		return 0
+	fi
 	if [[ -n "${value}" ]]; then
 	  echo "${value}"
 	  return 0
@@ -87,7 +95,7 @@ androidsdk="${androidTools}/sdk"
 
 #配置打包时的临时环境变量
 export JAVA_HOME="${androidTools}/jdk1.8.0_181"
-export GRADLE_HOME="${androidTools}/gradle/gradle-5.4.1/bin/"
+export GRADLE_HOME="${androidTools}/gradle-5.4.1/bin/"
 export JRE_HOME="${JAVA_HOME}/jre"
 export PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin:$GRADLE_HOME
 
@@ -193,6 +201,7 @@ buildApp() {
 	if [[ ! -f "${localProperties}" ]]; then
 		echo sdk.dir="${androidsdk}" > "${localProperties}"
 	fi
+	
 	gradle "assemble${configuration}"
 }
 getBuildApk() {
@@ -278,12 +287,10 @@ getChannelsConfig() {
 		return 0
 	fi
 	channels=$(getValue "defaultChannels" "channel.txt")
-	if [[ "${channels}" == true ]]; then
-		channels=$(find "${projectPath}" -name "${channels}" | sed -n '1p')
-		if [[ -f "${channels}" ]]; then
-			echo "${channels}"
-			return 0
-		fi
+	channels=$(find "${projectPath}" -name "${channels}" | sed -n '1p')
+	if [[ -f "${channels}" ]]; then
+		echo "${channels}"
+		return 0
 	fi
 	echo ""
 }
